@@ -1,0 +1,102 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container my-4">
+  <div class="row">
+    <!-- Vehicle Images -->
+    <div class="container mt-4">
+      <div class="row">
+        <!-- LEFT: Image Carousel -->
+        <div class="col-md-6">
+          {% if vehicle.images.all %}
+          <div id="vehicleCarousel" class="carousel slide" data-bs-ride="carousel">
+            <div class="carousel-inner">
+              {% for image in vehicle.images.all %}
+              <div class="carousel-item {% if forloop.first %}active{% endif %}">
+                <img src="{{ image.image.url }}" class="d-block w-100" style="max-height: 400px; object-fit: contain;" alt="Vehicle Image">
+              </div>
+              {% endfor %}
+            </div>
+            <button class="carousel-control-prev" type="button" data-bs-target="#vehicleCarousel" data-bs-slide="prev">
+              <span class="carousel-control-prev-icon"></span>
+            </button>
+            <button class="carousel-control-next" type="button" data-bs-target="#vehicleCarousel" data-bs-slide="next">
+              <span class="carousel-control-next-icon"></span>
+            </button>
+          </div>
+          {% else %}
+          <p class="text-muted">No images available.</p>
+          {% endif %}
+        </div>
+
+        <!-- Vehicle Info -->
+        <div class="col-md-6">
+          <div class="d-flex justify-content-between align-items-start mb-3">
+            <h3>{{ vehicle.brand }} {{ vehicle.model }}</h3>
+            {% if user.is_authenticated %}
+              <form method="post" action="{% url 'toggle_favorite' vehicle.pk %}">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-outline-danger">
+                  {% if is_favorited %}❤️ Remove from Favorites{% else %}+❤️ Add to Favorites{% endif %}
+                </button>
+              </form>
+            {% endif %}
+          </div>
+
+          <ul class="list-group list-group-flush mb-3">
+            <li class="list-group-item"><strong>Price:</strong> {{ vehicle.price }} ₺</li>
+            <li class="list-group-item"><strong>Year:</strong> {{ vehicle.year }}</li>
+            <li class="list-group-item"><strong>Mileage:</strong> {{ vehicle.km }} km</li>
+            <li class="list-group-item"><strong>Status:</strong> {% if vehicle.is_for_rent %}For Rent{% else %}For Sale{% endif %}</li>
+            <li class="list-group-item"><strong>Fuel Type:</strong> {{ vehicle.fuel_type }}</li>
+            <li class="list-group-item"><strong>Transmission:</strong> {{ vehicle.transmission }}</li>
+            <li class="list-group-item"><strong>Engine Power:</strong> {{ vehicle.engine_power }} hp</li>
+            <li class="list-group-item"><strong>Sunroof:</strong> {% if vehicle.sunroof %}Yes{% else %}No{% endif %}</li>
+            <li class="list-group-item"><strong>Color:</strong> {{ vehicle.color }}</li>
+            <li class="list-group-item"><strong>Location:</strong> {{ vehicle.location }}</li>
+            <li class="list-group-item"><strong>Description:</strong> {{ vehicle.description }}</li>
+          </ul>
+        </div>
+      </div>
+
+      <!-- Comments Section -->
+      <div class="row mt-5">
+        <div class="col-md-12">
+          <h4>Comments</h4>
+          <ul class="list-group mb-3">
+            {% for comment in comments %}
+              <li class="list-group-item">
+                <strong>{{ comment.user.username }}</strong>: {{ comment.content }}
+                <small class="text-muted float-end">{{ comment.created_at|date:"d M Y H:i" }}</small>
+              </li>
+            {% empty %}
+              <li class="list-group-item text-muted">No comments yet.</li>
+            {% endfor %}
+          </ul>
+
+          {% if user.is_authenticated %}
+          <form method="post">
+            {% csrf_token %}
+            <div class="mb-3">
+              <textarea name="content" class="form-control" placeholder="Write your comment..." required></textarea>
+            </div>
+            <div class="d-flex gap-2 flex-wrap">
+              <button type="submit" class="btn btn-primary">Submit Comment</button>
+              <a href="{% url 'send_message' vehicle.id %}" class="btn btn-outline-primary">💬 Contact Seller</a>
+              <a href="{% url 'vehicle_list' %}" class="btn btn-secondary">← Back to Homepage</a>
+              {% if user == vehicle.owner %}
+              <a href="{% url 'vehicle_edit' vehicle.pk %}" class="btn btn-outline-warning">Edit</a>
+              <a href="{% url 'vehicle_delete' vehicle.pk %}" class="btn btn-outline-danger">Delete</a>
+              {% endif %}
+            </div>
+          </form>
+          {% else %}
+            <p><a href="{% url 'login' %}">Log in</a> to add a comment.</p>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

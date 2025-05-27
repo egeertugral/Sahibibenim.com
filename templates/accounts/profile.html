@@ -1,0 +1,93 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block content %}
+<div class="container mt-5">
+  <h2 class="text-center text-primary mb-4">My Profile</h2>
+
+  <!-- USER INFO -->
+  <div class="card mb-5 shadow-sm">
+    <div class="card-body">
+      <h5 class="card-title">{{ user.username }}</h5>
+      <p class="card-text"><strong>Email:</strong> {{ user.email }}</p>
+      <p class="card-text"><strong>Member since:</strong> {{ user.date_joined|date:"d M Y" }}</p>
+    </div>
+  </div>
+
+  <!-- MY VEHICLES -->
+  <h4 class="mb-3 text-success">My Vehicle Listings</h4>
+  <div class="row">
+    {% for vehicle in my_vehicles %}
+    <div class="col-md-4 mb-4">
+      <div class="card h-100 shadow">
+        {% if vehicle.images.first %}
+          <img src="{{ vehicle.images.first.image.url }}" class="card-img-top" style="height: 200px; object-fit: cover;">
+        {% else %}
+          <img src="{% static 'no-image.png' %}" class="card-img-top" style="height: 200px; object-fit: cover;">
+        {% endif %}
+        <div class="card-body">
+          <h5 class="card-title">{{ vehicle.brand }} {{ vehicle.model }}</h5>
+          <p class="card-text">
+            <strong>Price:</strong> {{ vehicle.price }}₺<br>
+            <strong>KM:</strong> {{ vehicle.km }}<br>
+            <strong>Year:</strong> {{ vehicle.year }}
+          </p>
+          <a href="{% url 'vehicle_detail' vehicle.pk %}" class="btn btn-outline-primary btn-sm">View Details</a>
+        </div>
+      </div>
+    </div>
+    {% empty %}
+    <p class="text-muted">You have not listed any vehicles yet.</p>
+    {% endfor %}
+  </div>
+
+  <!-- MY COMMENTS -->
+<h4 class="mb-3 text-info mt-5">My Comments</h4>
+<ul class="list-group mb-4">
+  {% for comment in my_comments %}
+    <li class="list-group-item d-flex justify-content-between align-items-start">
+      <div>
+        <strong>{{ comment.vehicle.brand }} {{ comment.vehicle.model }}</strong>: {{ comment.content }}
+        <div class="text-muted">{{ comment.created_at|date:"d M Y H:i" }}</div>
+      </div>
+      <form method="post" action="{% url 'delete_comment' comment.pk %}">
+        {% csrf_token %}
+        <button type="submit" class="btn btn-sm btn-danger ms-2">Delete</button>
+      </form>
+    </li>
+  {% empty %}
+    <li class="list-group-item text-muted">You have not posted any comments yet.</li>
+  {% endfor %}
+</ul>
+
+  <!-- MY FAVORITES -->
+  <h4 class="mb-3 text-warning">My Favorites</h4>
+  <div class="row">
+    {% for fav in my_favorites %}
+    <div class="col-md-4 mb-4">
+      <div class="card h-100 shadow">
+        {% if fav.vehicle.images.first %}
+          <img src="{{ fav.vehicle.images.first.image.url }}" class="card-img-top" style="height: 200px; object-fit: cover;">
+        {% else %}
+          <img src="{% static 'no-image.png' %}" class="card-img-top" style="height: 200px; object-fit: cover;">
+        {% endif %}
+        <div class="card-body">
+          <h5 class="card-title">{{ fav.vehicle.brand }} {{ fav.vehicle.model }}</h5>
+          <p class="card-text">
+            <strong>Price:</strong> {{ fav.vehicle.price }}₺<br>
+            <strong>KM:</strong> {{ fav.vehicle.km }}<br>
+            <strong>Year:</strong> {{ fav.vehicle.year }}
+          </p>
+          <a href="{% url 'vehicle_detail' fav.vehicle.pk %}" class="btn btn-outline-secondary btn-sm">View Details</a>
+        </div>
+      </div>
+    </div>
+    {% empty %}
+    <p class="text-muted">You haven't favorited any vehicles yet.</p>
+    {% endfor %}
+  </div>
+
+  <div class="text-center mt-4">
+    <a href="{% url 'vehicle_list' %}" class="btn btn-secondary">← Back to Homepage</a>
+  </div>
+</div>
+{% endblock %}
